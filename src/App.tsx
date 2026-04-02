@@ -225,30 +225,8 @@ function AppContent() {
         onSyncClick={handleDailySync}
       />
 
-      <div className="flex">
-        <nav className="fixed bottom-0 md:sticky top-16 left-0 w-full md:w-16 md:h-[calc(100vh-4rem)] bg-white dark:bg-gray-800 border-t md:border-t-0 md:border-r border-gray-200 dark:border-gray-700 z-30">
-          <div className="flex md:flex-col justify-around md:justify-start md:pt-4 md:gap-2">
-            {tabs.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`group relative flex flex-col items-center gap-1 p-3 md:p-3 rounded-lg transition-colors ${activeTab === tab.id ? 'text-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
-                title={tab.description}
-              >
-                <tab.icon className="w-5 h-5" />
-                <span className="text-xs md:hidden">{tab.label}</span>
-                {/* Desktop tooltip */}
-                <div className="hidden md:block absolute left-full ml-2 px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
-                  <div className="font-medium">{tab.label}</div>
-                  <div className="text-gray-300 dark:text-gray-400 font-normal">{tab.description}</div>
-                  <div className="absolute left-0 -ml-1 top-1/2 -translate-y-1/2 w-2 h-2 bg-gray-900 dark:bg-gray-700 rotate-45" />
-                </div>
-              </button>
-            ))}
-          </div>
-        </nav>
-
-        <main className="flex-1 md:ml-16 p-4 pb-24 md:pb-4">
+      <div className="pb-20 md:pb-4">
+        <main className="md:ml-16 p-4">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
@@ -368,6 +346,27 @@ function AppContent() {
           )}
         </main>
       </div>
+
+      <nav className="fixed bottom-0 left-0 right-0 md:sticky md:top-16 md:left-0 md:w-16 md:h-[calc(100vh-4rem)] bg-white dark:bg-gray-800 border-t md:border-t-0 md:border-r border-gray-200 dark:border-gray-700 z-30">
+        <div className="flex md:flex-col justify-around md:justify-start md:pt-4 md:gap-2">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`group relative flex flex-col items-center gap-1 p-3 md:p-3 rounded-lg transition-colors ${activeTab === tab.id ? 'text-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+              title={tab.description}
+            >
+              <tab.icon className="w-5 h-5" />
+              <span className="text-xs md:hidden">{tab.label}</span>
+              <div className="hidden md:block absolute left-full ml-2 px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
+                <div className="font-medium">{tab.label}</div>
+                <div className="text-gray-300 dark:text-gray-400 font-normal">{tab.description}</div>
+                <div className="absolute left-0 -ml-1 top-1/2 -translate-y-1/2 w-2 h-2 bg-gray-900 dark:bg-gray-700 rotate-45" />
+              </div>
+            </button>
+          ))}
+        </div>
+      </nav>
 
       <EventModal
         event={editingEvent}

@@ -35,6 +35,11 @@ export default function LifeCalendar({ birthday, events, onWeekClick, showOnlyCu
     });
   }, [lifeSpan, birthYear, currentYear, showOnlyCurrentYear, showPastYears]);
 
+  const currentBatchIndex = useMemo(() => {
+    const age = currentYear - birthYear;
+    return Math.floor(age / 10);
+  }, [currentYear, birthYear]);
+
   const batches = useMemo(() => {
     const result = [];
     for (let i = 0; i < years.length; i += 10) {
@@ -43,13 +48,6 @@ export default function LifeCalendar({ birthday, events, onWeekClick, showOnlyCu
     return result;
   }, [years]);
 
-  const allBatchIndices = useMemo(() => 
-    new Set(Array.from({ length: batches.length }, (_, i) => i)), 
-    [batches.length]
-  );
-
-  const [expandedBatches, setExpandedBatches] = useState<Set<number>>(allBatchIndices);
-  
   const getEventsForWeek = (year: number, weekNum: number) => {
     const { start, end } = getWeekRange(weekNum, year, weekStartDay);
     return events.filter(event => 
@@ -77,37 +75,31 @@ export default function LifeCalendar({ birthday, events, onWeekClick, showOnlyCu
     return categoryConfig ? `${categoryConfig.color}40` : 'bg-gray-200 dark:bg-gray-700';
   };
 
-  const toggleBatch = (index: number) => {
-    setExpandedBatches(prev => {
-      const next = new Set(prev);
-      if (next.has(index)) {
-        next.delete(index);
-      } else {
-        next.add(index);
-      }
-      return next;
-    });
+  const toggleBatch = (index: number, setExpandedBatches: any, expandedBatches: Set<number>) => {
+    const next = new Set(expandedBatches);
+    if (next.has(index)) {
+      next.delete(index);
+    } else {
+      next.add(index);
+    }
+    setExpandedBatches(next);
   };
 
-  const WeekBlock = ({ year, weekNum, small = false }: { year: number; weekNum: number; small?: boolean }) => {
+  const WeekBlock = ({ year, weekNum }: { year: number; weekNum: number }) => {
     const isPast = isWeekPast(year, weekNum);
     const isCurrent = isCurrentWeek(year, weekNum);
     const weekEvents = getEventsForWeek(year, weekNum);
     const isHovered = hoveredWeek?.year === year && hoveredWeek?.weekNumber === weekNum;
     
-    const baseClasses = small 
-      ? 'w-full h-2 rounded-sm' 
-      : 'w-full h-3 sm:h-4 rounded-sm';
-    
     return (
       <div
         className={`
-          ${baseClasses}
+          flex-1 h-3 sm:h-4 min-w-[2px]
           ${isPast && hideCompletedWeeks ? 'opacity-0' : 'opacity-100'}
           ${isPast ? 'bg-gray-200 dark:bg-gray-700' : getWeekColor(year, weekNum)}
           ${isCurrent ? 'ring-2 ring-red-500 ring-offset-0.5 animate-pulse' : ''}
           ${isHovered ? 'scale-110 z-10' : ''}
-          cursor-pointer transition-transform
+          cursor-pointer transition-transform rounded-sm
         `}
         onMouseEnter={() => setHoveredWeek({ year, weekNumber: weekNum })}
         onMouseLeave={() => setHoveredWeek(null)}
@@ -127,10 +119,10 @@ export default function LifeCalendar({ birthday, events, onWeekClick, showOnlyCu
           <div className="w-12 text-sm text-gray-500 dark:text-gray-400 font-medium flex-shrink-0">
             {currentYear}
           </div>
-          <div className="grid grid-cols-52 gap-px flex-1">
+          <div className="flex gap-px flex-1">
             {Array.from({ length: 52 }, (_, weekIndex) => {
               const weekNum = weekIndex + 1;
-              return <WeekBlock key={weekNum} year={currentYear} weekNum={weekNum} small />;
+              return <WeekBlock key={weekNum} year={currentYear} weekNum={weekNum} />;
             })}
           </div>
         </div>
@@ -138,49 +130,55 @@ export default function LifeCalendar({ birthday, events, onWeekClick, showOnlyCu
     );
   }
 
+  const [expandedBatches, setExpandedBatches] = useState<Set<number>>(() => {
+    const initial = new Set<number>();
+    initial.add(currentBatchIndex);
+    return initial;
+  });
+
   return (
-    <div className="space-y-2">
-      <div className="overflow-x-auto">
-        {batches.map((batch, batchIndex) => {
-          const isExpanded = expandedBatches.has(batchIndex);
-          const firstYear = batch[0];
-          const lastYear = batch[batch.length - 1];
-          
-          return (
-            <div key={batchIndex} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden mb-2">
-              <button
-                onClick={() => toggleBatch(batchIndex)}
-                className="w-full flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              >
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {firstYear} - {lastYear} ({lastYear - firstYear + 1} years)
-                </span>
-                {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              </button>
-              
-              {isExpanded && (
-                <div className="p-2 space-y-1">
-                  {batch.map(year => (
-                    <div key={year} className="flex items-center gap-2">
-                      <div className="w-12 text-xs text-gray-500 dark:text-gray-400 font-medium flex-shrink-0">
-                        {year}
-                      </div>
-                      <div className="grid grid-cols-52 gap-px flex-1 min-w-0">
-                        {Array.from({ length: 52 }, (_, weekIndex) => {
-                          const weekNum = weekIndex + 1;
-                          return <WeekBlock key={weekNum} year={year} weekNum={weekNum} />;
-                        })}
-                      </div>
+    <div className="p-2 sm:p-4 space-y-2">
+      {batches.map((batch, batchIndex) => {
+        const isExpanded = expandedBatches.has(batchIndex);
+        const firstYear = batch[0];
+        const lastYear = batch[batch.length - 1];
+        const isCurrentBatch = batchIndex === currentBatchIndex;
+        
+        return (
+          <div key={batchIndex} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+            <button
+              onClick={() => toggleBatch(batchIndex, setExpandedBatches, expandedBatches)}
+              className="w-full flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {firstYear} - {lastYear} ({lastYear - firstYear + 1} years)
+                {isCurrentBatch && <span className="ml-2 text-xs text-primary-500">(Current)</span>}
+              </span>
+              {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+            
+            {isExpanded && (
+              <div className="p-2 space-y-1">
+                {batch.map(year => (
+                  <div key={year} className="flex items-center gap-2">
+                    <div className="w-12 text-xs text-gray-500 dark:text-gray-400 font-medium flex-shrink-0">
+                      {year}
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+                    <div className="flex gap-px flex-1">
+                      {Array.from({ length: 52 }, (_, weekIndex) => {
+                        const weekNum = weekIndex + 1;
+                        return <WeekBlock key={weekNum} year={year} weekNum={weekNum} />;
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
       
-      <div className="flex items-center gap-4 text-xs px-2">
+      <div className="flex items-center gap-4 text-xs px-2 pt-2">
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded-sm bg-gray-200 dark:bg-gray-700" />
           <span className="text-gray-500 dark:text-gray-400">Past</span>
