@@ -95,7 +95,7 @@ export default function LifeCalendar({ birthday, events, onWeekClick, showOnlyCu
     return (
       <div
         className={`
-          flex-1 h-3 sm:h-4 min-w-[2px]
+          flex-1 aspect-square
           ${isPast && hideCompletedWeeks ? 'opacity-0' : 'opacity-100'}
           ${isPast ? 'bg-gray-200 dark:bg-gray-700' : getWeekColor(year, weekNum)}
           ${isCurrent ? 'ring-2 ring-red-500 ring-offset-0.5 animate-pulse' : ''}
