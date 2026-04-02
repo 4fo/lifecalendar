@@ -38,10 +38,39 @@ export function getYearsRange(startYear: number, endYear: number): number[] {
   return eachYearOfInterval({ start: new Date(startYear, 0, 1), end: new Date(endYear, 0, 1) }).map(d => d.getFullYear());
 }
 
+export function getWeekNumber(date: Date, weekStartDay: 'sunday' | 'monday' = 'sunday'): number {
+  const year = date.getFullYear();
+  
+  const firstDayOfYear = new Date(year, 0, 1);
+  const dayOfYear = Math.floor((date.getTime() - firstDayOfYear.getTime()) / (24 * 60 * 60 * 1000)) + 1;
+  
+  const firstDayOfWeek = firstDayOfYear.getDay();
+  
+  let weekNumber: number;
+  
+  if (weekStartDay === 'sunday') {
+    const daysUntilFirstSunday = firstDayOfWeek === 0 ? 0 : 7 - firstDayOfWeek;
+    
+    if (dayOfYear <= daysUntilFirstSunday) {
+      weekNumber = 1;
+    } else {
+      weekNumber = Math.ceil((dayOfYear - daysUntilFirstSunday) / 7);
+    }
+  } else {
+    const daysUntilFirstMonday = firstDayOfWeek === 1 ? 0 : (firstDayOfWeek === 0 ? 1 : 8 - firstDayOfWeek);
+    
+    if (dayOfYear <= daysUntilFirstMonday) {
+      weekNumber = 1;
+    } else {
+      weekNumber = Math.ceil((dayOfYear - daysUntilFirstMonday) / 7);
+    }
+  }
+  
+  return Math.min(Math.max(weekNumber, 1), 52);
+}
+
 export function getCurrentWeekNumber(weekStartDay: 'sunday' | 'monday' = 'sunday'): number {
-  const now = new Date();
-  const start = startOfWeek(now, { weekStartsOn: weekStartDay === 'sunday' ? 0 : 1 });
-  return differenceInWeeks(now, start) + 1;
+  return getWeekNumber(new Date(), weekStartDay);
 }
 
 export function isEventInDateRange(eventStart: Date, eventEnd: Date | undefined, dateRange: { start: Date | null; end: Date | null }): boolean {
