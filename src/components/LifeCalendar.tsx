@@ -95,12 +95,13 @@ export default function LifeCalendar({ birthday, events, onWeekClick, showOnlyCu
     return (
       <div
         className={`
-          flex-1 aspect-square
+          flex-1 sm:aspect-square
           ${isPast && hideCompletedWeeks ? 'opacity-0' : 'opacity-100'}
           ${isPast ? 'bg-gray-200 dark:bg-gray-700' : getWeekColor(year, weekNum)}
           ${isCurrent ? 'ring-2 ring-red-500 ring-offset-0.5 animate-pulse' : ''}
           ${isHovered ? 'scale-110 z-10' : ''}
           cursor-pointer transition-transform rounded-sm
+          h-4 sm:h-auto min-h-[20px]
         `}
         onMouseEnter={() => setHoveredWeek({ year, weekNumber: weekNum })}
         onMouseLeave={() => setHoveredWeek(null)}
@@ -120,7 +121,7 @@ export default function LifeCalendar({ birthday, events, onWeekClick, showOnlyCu
           <div className="w-12 text-sm text-gray-500 dark:text-gray-400 font-medium flex-shrink-0">
             {currentYear}
           </div>
-          <div className="flex gap-px flex-1">
+          <div className="flex gap-0.5 sm:gap-px flex-1">
             {Array.from({ length: 52 }, (_, weekIndex) => {
               const weekNum = weekIndex + 1;
               return <WeekBlock key={weekNum} year={currentYear} weekNum={weekNum} />;
@@ -164,7 +165,7 @@ export default function LifeCalendar({ birthday, events, onWeekClick, showOnlyCu
                     <div className="w-12 text-xs text-gray-500 dark:text-gray-400 font-medium flex-shrink-0">
                       {year}
                     </div>
-                    <div className="flex gap-px flex-1">
+                    <div className="flex gap-0.5 sm:gap-px flex-1">
                       {Array.from({ length: 52 }, (_, weekIndex) => {
                         const weekNum = weekIndex + 1;
                         return <WeekBlock key={weekNum} year={year} weekNum={weekNum} />;
