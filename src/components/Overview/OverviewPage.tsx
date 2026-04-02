@@ -132,7 +132,7 @@ export default function OverviewPage({ birthday, events, onNavigate, onAddEvent,
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-24 md:pb-4">
       {sections.map(section => {
         const isExpanded = expandedSection === section.id || expandedSection === 'all';
         const Icon = section.icon;
@@ -147,23 +147,23 @@ export default function OverviewPage({ birthday, events, onNavigate, onAddEvent,
               className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-lg bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center flex-shrink-0">
                   <Icon className="w-5 h-5 text-primary-500" />
                 </div>
-                <div className="text-left">
+                <div className="text-left min-w-0">
                   <h3 className="font-semibold text-gray-900 dark:text-gray-100">{section.title}</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{section.shortDescription}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{section.shortDescription}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     onNavigate(section.id as any);
                   }}
-                  className="flex items-center gap-1 px-3 py-1.5 text-sm text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+                  className="flex items-center gap-1 px-2 py-1.5 text-xs sm:text-sm text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
                 >
-                  Expand
+                  <span className="hidden sm:inline">Expand</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
                 {isExpanded ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
@@ -171,7 +171,7 @@ export default function OverviewPage({ birthday, events, onNavigate, onAddEvent,
             </button>
             
             {isExpanded && (
-              <div className="border-t border-gray-200 dark:border-gray-700">
+              <div className="border-t border-gray-200 dark:border-gray-700 overflow-auto">
                 {section.component}
               </div>
             )}
