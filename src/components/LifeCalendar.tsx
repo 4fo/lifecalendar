@@ -28,10 +28,11 @@ export default function LifeCalendar({ birthday, events, onWeekClick, showOnlyCu
   const currentWeekNum = getCurrentWeekNumber(weekStartDay);
 
   const years = useMemo(() => {
+    const maxYear = birthYear + lifeSpan;
     return Array.from({ length: lifeSpan }, (_, ageIndex) => birthYear + ageIndex).filter(year => {
       if (showOnlyCurrentYear) return year === currentYear;
       if (!showPastYears && year < currentYear) return false;
-      return year <= currentYear + 20;
+      return year <= maxYear; // Show full life span
     });
   }, [lifeSpan, birthYear, currentYear, showOnlyCurrentYear, showPastYears]);
 
@@ -131,9 +132,8 @@ export default function LifeCalendar({ birthday, events, onWeekClick, showOnlyCu
   }
 
   const [expandedBatches, setExpandedBatches] = useState<Set<number>>(() => {
-    const initial = new Set<number>();
-    initial.add(currentBatchIndex);
-    return initial;
+    // Expand all batches initially
+    return new Set(batches.map((_, i) => i));
   });
 
   return (

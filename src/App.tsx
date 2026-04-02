@@ -225,9 +225,8 @@ function AppContent() {
         onSyncClick={handleDailySync}
       />
 
-      <div className="pb-20 md:pb-4">
-        <main className="md:ml-16 p-4">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+      <main className="md:ml-16 p-4 pb-24 md:pb-4 min-h-0">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <label className="text-sm text-gray-600 dark:text-gray-400">Birthday:</label>
@@ -345,7 +344,6 @@ function AppContent() {
             <GuidedLifePanel userId={user?.id || null} isPremium={false} />
           )}
         </main>
-      </div>
 
       <nav className="fixed bottom-0 left-0 right-0 md:sticky md:top-16 md:left-0 md:w-16 md:h-[calc(100vh-4rem)] bg-white dark:bg-gray-800 border-t md:border-t-0 md:border-r border-gray-200 dark:border-gray-700 z-30">
         <div className="flex md:flex-col justify-around md:justify-start md:pt-4 md:gap-2">
