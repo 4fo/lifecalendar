@@ -206,10 +206,10 @@ function AppContent() {
   };
 
   const tabs = [
-    { id: 'calendar', icon: Calendar, label: 'Calendar' },
-    { id: 'timeline', icon: Clock, label: 'Timeline' },
-    { id: 'statistics', icon: BarChart3, label: 'Stats' },
-    { id: 'guided', icon: Target, label: 'Guided Life' },
+    { id: 'calendar', icon: Calendar, label: 'Calendar', description: 'Life calendar view with weekly blocks from birth to life expectancy' },
+    { id: 'timeline', icon: Clock, label: 'Timeline', description: 'Chronological timeline of your life events grouped by year' },
+    { id: 'statistics', icon: BarChart3, label: 'Stats', description: 'Life statistics, progress tracking, and event analytics' },
+    { id: 'guided', icon: Target, label: 'Guided Life', description: 'Set yearly goals, quarterly objectives, and monthly milestones' },
   ] as const;
 
   return (
@@ -230,10 +230,17 @@ function AppContent() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex flex-col items-center gap-1 p-3 md:p-3 rounded-lg transition-colors ${activeTab === tab.id ? 'text-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                className={`group relative flex flex-col items-center gap-1 p-3 md:p-3 rounded-lg transition-colors ${activeTab === tab.id ? 'text-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                title={tab.description}
               >
                 <tab.icon className="w-5 h-5" />
                 <span className="text-xs md:hidden">{tab.label}</span>
+                {/* Desktop tooltip */}
+                <div className="hidden md:block absolute left-full ml-2 px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
+                  <div className="font-medium">{tab.label}</div>
+                  <div className="text-gray-300 dark:text-gray-400 font-normal">{tab.description}</div>
+                  <div className="absolute left-0 -ml-1 top-1/2 -translate-y-1/2 w-2 h-2 bg-gray-900 dark:bg-gray-700 rotate-45" />
+                </div>
               </button>
             ))}
           </div>
