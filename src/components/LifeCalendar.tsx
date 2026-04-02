@@ -113,10 +113,10 @@ export default function LifeCalendar({ birthday, events, onWeekClick, showOnlyCu
     return (
       <div className="p-2">
         <div className="flex items-center gap-0">
-          <div className="w-8 text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium flex-shrink-0">
+          <div className="w-6 text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium flex-shrink-0">
             {currentYear}
           </div>
-          <div className="flex -ml-1 gap-0 flex-1">
+          <div className="flex -ml-1 gap-2 flex-1">
             {Array.from({ length: 52 }, (_, weekIndex) => {
               const weekNum = weekIndex + 1;
               return <WeekBlock key={weekNum} year={currentYear} weekNum={weekNum} />;
@@ -155,10 +155,10 @@ export default function LifeCalendar({ birthday, events, onWeekClick, showOnlyCu
               <div className="p-2 space-y-1">
                 {batch.map(year => (
                   <div key={year} className="flex items-center gap-0">
-                    <div className="w-8 text-xs text-gray-500 dark:text-gray-400 font-medium flex-shrink-0">
+                    <div className="w-6 text-xs text-gray-500 dark:text-gray-400 font-medium flex-shrink-0">
                       {year}
                     </div>
-                    <div className="flex -ml-1 gap-0 flex-1">
+                    <div className="flex -ml-1 gap-2 flex-1">
                       {Array.from({ length: 52 }, (_, weekIndex) => {
                         const weekNum = weekIndex + 1;
                         return <WeekBlock key={weekNum} year={year} weekNum={weekNum} />;
