@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AppProvider, useApp } from './store/AppContext';
 import Header from './components/Header';
 import LifeCalendar from './components/LifeCalendar';
@@ -6,19 +6,119 @@ import Timeline from './components/Timeline';
 import Statistics from './components/Statistics';
 import EventModal from './components/EventModal';
 import SettingsModal from './components/SettingsModal';
+import AuthModal from './components/AuthModal';
+import GuidedLifePanel from './components/GuidedLife/GuidedLifePanel';
 import { Event, CATEGORIES } from './types';
-import { Calendar, Clock, BarChart3, Plus, ChevronDown, ChevronUp, Trash2, Copy, Download, Upload } from 'lucide-react';
+import { Calendar, Clock, BarChart3, Plus, ChevronDown, ChevronUp, Trash2, Copy, Download, Upload, Target } from 'lucide-react';
+import { getCurrentUser, signOut } from './services/auth';
+import { getLastSyncDate, getPendingSyncCount, performDailySync, fetchEvents, fetchProfile, updateProfile, incrementPendingSync, SyncStatus } from './services/sync';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 function AppContent() {
   const { state, dispatch } = useApp();
-  const [activeTab, setActiveTab] = useState<'calendar' | 'timeline' | 'statistics'>('calendar');
+  const [activeTab, setActiveTab] = useState<'calendar' | 'timeline' | 'statistics' | 'guided'>('calendar');
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [birthday, setBirthday] = useState(() => new Date(1990, 0, 1));
   const [showEventDetails, setShowEventDetails] = useState<Event | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  
+  // Auth & Sync state
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>({
+    lastSync: null,
+    pendingChanges: 0,
+    isSyncing: false,
+    error: null,
+  });
+
+  useEffect(() => {
+    initAuth();
+  }, []);
+
+  const initAuth = async () => {
+    const currentUser = await getCurrentUser();
+    setUser(currentUser);
+    
+    if (currentUser) {
+      loadCloudData(currentUser.id);
+    } else {
+      const lastSync = getLastSyncDate();
+      const pending = getPendingSyncCount();
+      setSyncStatus({ lastSync, pendingChanges: pending, isSyncing: false, error: null });
+    }
+  };
+
+  const loadCloudData = async (userId: string) => {
+    try {
+      const [profile, events] = await Promise.all([
+        fetchProfile(userId),
+        fetchEvents(userId),
+      ]);
+      
+      if (profile) {
+        if (profile.birthday) {
+          setBirthday(new Date(profile.birthday));
+        }
+        dispatch({ type: 'SET_SETTINGS', payload: {
+          lifeSpan: profile.life_span,
+          weekStartDay: profile.week_start_day as 'sunday' | 'monday',
+          showPastYears: profile.show_past_years,
+          theme: profile.theme as 'light' | 'dark' | 'system',
+        }});
+      }
+      
+      if (events.length > 0) {
+        dispatch({ type: 'SET_EVENTS', payload: events });
+      }
+      
+      setSyncStatus({
+        lastSync: getLastSyncDate(),
+        pendingChanges: getPendingSyncCount(),
+        isSyncing: false,
+        error: null,
+      });
+    } catch (error) {
+      console.error('Error loading cloud data:', error);
+    }
+  };
+
+  const handleAuthSuccess = async () => {
+    const currentUser = await getCurrentUser();
+    setUser(currentUser);
+    if (currentUser) {
+      loadCloudData(currentUser.id);
+    }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    setUser(null);
+    showToast('Signed out successfully', 'success');
+  };
+
+  const handleDailySync = async () => {
+    if (!user) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+    
+    setSyncStatus(prev => ({ ...prev, isSyncing: true }));
+    const result = await performDailySync(state.events, user.id);
+    setSyncStatus({
+      ...result,
+      isSyncing: false,
+    });
+    
+    if (!result.error) {
+      showToast('Synced successfully', 'success');
+    } else {
+      showToast(result.error, 'error');
+    }
+  };
 
   const filteredEvents = state.events.filter(event => {
     const matchesSearch = !state.searchQuery || 
@@ -43,15 +143,23 @@ function AppContent() {
   const handleSaveEvent = (event: Event) => {
     if (editingEvent) {
       dispatch({ type: 'UPDATE_EVENT', payload: event });
-      showToast('Event updated successfully', 'success');
     } else {
       dispatch({ type: 'ADD_EVENT', payload: event });
-      showToast('Event added successfully', 'success');
     }
+    
+    if (user) {
+      incrementPendingSync();
+      setSyncStatus(prev => ({ ...prev, pendingChanges: prev.pendingChanges + 1 }));
+    }
+    
+    showToast(editingEvent ? 'Event updated' : 'Event added', 'success');
   };
 
   const handleDeleteEvent = (id: string) => {
     dispatch({ type: 'DELETE_EVENT', payload: id });
+    if (user) {
+      incrementPendingSync();
+    }
     showToast('Event deleted', 'success');
   };
 
@@ -68,7 +176,7 @@ function AppContent() {
     a.href = url;
     a.download = 'lifecalendar-export.json';
     a.click();
-    showToast('Events exported successfully', 'success');
+    showToast('Events exported', 'success');
   };
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,7 +187,7 @@ function AppContent() {
         try {
           const events = JSON.parse(e.target?.result as string);
           dispatch({ type: 'SET_EVENTS', payload: events });
-          showToast('Events imported successfully', 'success');
+          showToast('Events imported', 'success');
         } catch {
           showToast('Invalid file format', 'error');
         }
@@ -90,44 +198,44 @@ function AppContent() {
 
   const handleCopyLink = (event: Event) => {
     navigator.clipboard.writeText(`${window.location.origin}/event/${event.id}`);
-    showToast('Link copied to clipboard', 'success');
+    showToast('Link copied', 'success');
   };
 
   const handleWeekClick = (week: { year: number; weekNumber: number; start: Date; end: Date }) => {
     console.log('Week clicked:', week);
   };
 
+  const tabs = [
+    { id: 'calendar', icon: Calendar, label: 'Calendar' },
+    { id: 'timeline', icon: Clock, label: 'Timeline' },
+    { id: 'statistics', icon: BarChart3, label: 'Stats' },
+    { id: 'guided', icon: Target, label: 'Guided Life' },
+  ] as const;
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header 
         onSearchChange={query => dispatch({ type: 'SET_SEARCH_QUERY', payload: query })}
         onSettingsClick={() => setIsSettingsModalOpen(true)}
+        user={user}
+        onAuthClick={() => user ? handleSignOut() : setIsAuthModalOpen(true)}
+        syncStatus={syncStatus}
+        onSyncClick={handleDailySync}
       />
 
       <div className="flex">
         <nav className="fixed bottom-0 md:sticky top-16 left-0 w-full md:w-16 md:h-[calc(100vh-4rem)] bg-white dark:bg-gray-800 border-t md:border-t-0 md:border-r border-gray-200 dark:border-gray-700 z-30">
           <div className="flex md:flex-col justify-around md:justify-start md:pt-4 md:gap-2">
-            <button
-              onClick={() => setActiveTab('calendar')}
-              className={`flex flex-col items-center gap-1 p-3 md:p-3 rounded-lg transition-colors ${activeTab === 'calendar' ? 'text-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
-            >
-              <Calendar className="w-5 h-5" />
-              <span className="text-xs md:hidden">Calendar</span>
-            </button>
-            <button
-              onClick={() => setActiveTab('timeline')}
-              className={`flex flex-col items-center gap-1 p-3 md:p-3 rounded-lg transition-colors ${activeTab === 'timeline' ? 'text-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
-            >
-              <Clock className="w-5 h-5" />
-              <span className="text-xs md:hidden">Timeline</span>
-            </button>
-            <button
-              onClick={() => setActiveTab('statistics')}
-              className={`flex flex-col items-center gap-1 p-3 md:p-3 rounded-lg transition-colors ${activeTab === 'statistics' ? 'text-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
-            >
-              <BarChart3 className="w-5 h-5" />
-              <span className="text-xs md:hidden">Stats</span>
-            </button>
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex flex-col items-center gap-1 p-3 md:p-3 rounded-lg transition-colors ${activeTab === tab.id ? 'text-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+              >
+                <tab.icon className="w-5 h-5" />
+                <span className="text-xs md:hidden">{tab.label}</span>
+              </button>
+            ))}
           </div>
         </nav>
 
@@ -139,7 +247,13 @@ function AppContent() {
                 <input
                   type="date"
                   value={birthday.toISOString().split('T')[0]}
-                  onChange={e => setBirthday(new Date(e.target.value))}
+                  onChange={async e => {
+                    const newBirthday = new Date(e.target.value);
+                    setBirthday(newBirthday);
+                    if (user) {
+                      await updateProfile(user.id, { birthday: e.target.value });
+                    }
+                  }}
                   className="px-3 py-1.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm"
                 />
               </div>
@@ -229,6 +343,10 @@ function AppContent() {
               <Statistics birthday={birthday} />
             </div>
           )}
+
+          {activeTab === 'guided' && (
+            <GuidedLifePanel userId={user?.id || null} isPremium={false} />
+          )}
         </main>
       </div>
 
@@ -242,6 +360,12 @@ function AppContent() {
       <SettingsModal
         isOpen={isSettingsModalOpen}
         onClose={() => setIsSettingsModalOpen(false)}
+      />
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onSuccess={handleAuthSuccess}
       />
 
       {showEventDetails && (
