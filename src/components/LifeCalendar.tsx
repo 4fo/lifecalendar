@@ -96,7 +96,7 @@ export default function LifeCalendar({ birthday, events, onWeekClick, showOnlyCu
           ${isCurrent ? 'ring-2 ring-red-500 ring-offset-0.5 animate-pulse' : ''}
           ${isHovered ? 'scale-110 z-10' : ''}
           cursor-pointer transition-transform rounded-sm
-          h-4 sm:h-auto min-h-[20px]
+          h-4 sm:h-8 min-h-[20px]
         `}
         onMouseEnter={() => setHoveredWeek({ year, weekNumber: weekNum })}
         onMouseLeave={() => setHoveredWeek(null)}
@@ -113,7 +113,7 @@ export default function LifeCalendar({ birthday, events, onWeekClick, showOnlyCu
     return (
       <div className="p-2">
         <div className="flex items-center gap-0">
-          <div className="w-auto text-right text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium flex-shrink-0">
+          <div className="w-8 text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium flex-shrink-0">
             {currentYear}
           </div>
           <div className="flex -ml-1 gap-2 sm:gap-1 flex-1">
@@ -155,7 +155,7 @@ export default function LifeCalendar({ birthday, events, onWeekClick, showOnlyCu
               <div className="p-2 space-y-1">
                 {batch.map(year => (
                   <div key={year} className="flex items-center gap-0">
-                    <div className="w-auto text-right text-xs text-gray-500 dark:text-gray-400 font-medium flex-shrink-0">
+                    <div className="w-8 text-xs text-gray-500 dark:text-gray-400 font-medium flex-shrink-0">
                       {year}
                     </div>
                     <div className="flex -ml-1 gap-2 sm:gap-1 flex-1">
