@@ -36,11 +36,6 @@ export default function LifeCalendar({ birthday, events, onWeekClick, showOnlyCu
     });
   }, [lifeSpan, birthYear, currentYear, showOnlyCurrentYear, showPastYears]);
 
-  const currentBatchIndex = useMemo(() => {
-    const age = currentYear - birthYear;
-    return Math.floor(age / 10);
-  }, [currentYear, birthYear]);
-
   const batches = useMemo(() => {
     const result = [];
     for (let i = 0; i < years.length; i += 10) {
@@ -95,7 +90,7 @@ export default function LifeCalendar({ birthday, events, onWeekClick, showOnlyCu
     return (
       <div
         className={`
-          flex-1 sm:aspect-square
+          flex-1 sm:aspect-square min-w-[3px]
           ${isPast && hideCompletedWeeks ? 'opacity-0' : 'opacity-100'}
           ${isPast ? 'bg-gray-200 dark:bg-gray-700' : getWeekColor(year, weekNum)}
           ${isCurrent ? 'ring-2 ring-red-500 ring-offset-0.5 animate-pulse' : ''}
@@ -143,7 +138,6 @@ export default function LifeCalendar({ birthday, events, onWeekClick, showOnlyCu
         const isExpanded = expandedBatches.has(batchIndex);
         const firstYear = batch[0];
         const lastYear = batch[batch.length - 1];
-        const isCurrentBatch = batchIndex === currentBatchIndex;
         
         return (
           <div key={batchIndex} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
@@ -153,7 +147,6 @@ export default function LifeCalendar({ birthday, events, onWeekClick, showOnlyCu
             >
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 {firstYear} - {lastYear} ({lastYear - firstYear + 1} years)
-                {isCurrentBatch && <span className="ml-2 text-xs text-primary-500">(Current)</span>}
               </span>
               {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
