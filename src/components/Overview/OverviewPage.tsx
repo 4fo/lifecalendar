@@ -133,7 +133,7 @@ export default function OverviewPage({ birthday, events, onNavigate, onAddEvent,
   };
 
   return (
-    <div className="space-y-4 pb-24 md:pb-4">
+    <div className="space-y-4">
       {sections.map(section => {
         const isExpanded = expandedSection === section.id || expandedSection === 'all';
         const Icon = section.icon;

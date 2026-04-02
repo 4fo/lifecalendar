@@ -215,7 +215,7 @@ function AppContent() {
   ] as const;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="h-screen md:h-auto min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col overflow-hidden">
       <Header 
         onSearchChange={query => dispatch({ type: 'SET_SEARCH_QUERY', payload: query })}
         onSettingsClick={() => setIsSettingsModalOpen(true)}
@@ -225,7 +225,7 @@ function AppContent() {
         onSyncClick={handleDailySync}
       />
 
-      <div className="flex">
+      <div className="flex flex-1 min-h-0 overflow-hidden">
         <nav className="fixed bottom-0 md:sticky top-16 left-0 w-full md:w-16 md:h-[calc(100vh-4rem)] bg-white dark:bg-gray-800 border-t md:border-t-0 md:border-r border-gray-200 dark:border-gray-700 z-30">
           <div className="flex md:flex-col justify-around md:justify-start md:pt-4 md:gap-2">
             {tabs.map(tab => (
@@ -248,7 +248,7 @@ function AppContent() {
           </div>
         </nav>
 
-        <main className="flex-1 md:ml-16 p-4 pb-20 md:pb-4">
+        <main className="flex-1 md:ml-16 p-4 pb-24 md:pb-4 min-h-0 overflow-auto">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
