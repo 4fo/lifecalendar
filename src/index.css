@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --accent: #0ea5e9;
+  --accent-hover: #0284c7;
+}
+
+.dark {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --accent: #38bdf8;
+  --accent-hover: #0ea5e9;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--text-secondary) transparent;
+}
+
+.week-block {
+  aspect-ratio: 1;
+  min-width: 12px;
+  transition: all 0.2s ease;
+}
+
+.week-block:hover {
+  transform: scale(1.1);
+  z-index: 10;
+}
