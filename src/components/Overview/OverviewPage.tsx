@@ -35,14 +35,14 @@ export default function OverviewPage({ birthday, events, onNavigate, onAddEvent,
       id: 'stats',
       title: 'Life Statistics',
       icon: BarChart3,
-      component: <Statistics birthday={birthday} />,
+      component: <div className="p-2 sm:p-4"><Statistics birthday={birthday} /></div>,
       shortDescription: 'Your life progress at a glance',
     },
     {
       id: 'guided',
       title: 'Guided Life',
       icon: Target,
-      component: <GuidedLifePanel userId={null} isPremium={false} />,
+      component: <div className="p-2 sm:p-4"><GuidedLifePanel userId={null} isPremium={false} /></div>,
       shortDescription: 'Yearly goals, objectives & milestones',
     },
     {
@@ -50,20 +50,20 @@ export default function OverviewPage({ birthday, events, onNavigate, onAddEvent,
       title: 'This Year',
       icon: Calendar,
       component: (
-        <div className="p-4">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm text-gray-500 dark:text-gray-400">
+        <div className="p-2">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
               Week {currentWeekNum} of {currentYear}
             </span>
-            <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer">
+            <label className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400 cursor-pointer">
               <input
                 type="checkbox"
                 checked={hideCompletedWeeks}
                 onChange={e => setHideCompletedWeeks(e.target.checked)}
-                className="rounded"
+                className="rounded w-3 h-3"
               />
-              {hideCompletedWeeks ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              {hideCompletedWeeks ? 'Hide past' : 'Show all'}
+              {hideCompletedWeeks ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+              <span className="hidden sm:inline">{hideCompletedWeeks ? 'Hide past' : 'Show all'}</span>
             </label>
           </div>
           <LifeCalendar 
@@ -82,28 +82,28 @@ export default function OverviewPage({ birthday, events, onNavigate, onAddEvent,
       title: 'This Week',
       icon: Clock,
       component: (
-        <div className="p-4">
+        <div className="p-2 sm:p-4">
           {thisWeekEvents.length === 0 ? (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              <p className="mb-2">No events this week</p>
-              <p className="text-sm">{formatDate(weekStart, 'MMM d')} - {formatDate(weekEnd, 'MMM d, yyyy')}</p>
+            <div className="text-center py-4 text-gray-500 dark:text-gray-400">
+              <p className="text-sm mb-1">No events this week</p>
+              <p className="text-xs">{formatDate(weekStart, 'MMM d')} - {formatDate(weekEnd, 'MMM d, yyyy')}</p>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-1 sm:space-y-2">
               {thisWeekEvents.map(event => {
                 const categoryConfig = CATEGORIES.find(c => c.id === event.category);
                 return (
                   <div
                     key={event.id}
                     onClick={() => onEditEvent(event)}
-                    className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="flex items-center gap-2 p-2 sm:p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
                     <div 
-                      className="w-2 h-2 rounded-full" 
+                      className="w-2 h-2 rounded-full flex-shrink-0" 
                       style={{ backgroundColor: categoryConfig?.color || '#64748b' }}
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{event.title}</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{event.title}</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
                         {formatDate(event.startDate, 'MMM d')}
                         {event.endDate && ` - ${formatDate(event.endDate, 'MMM d')}`}
@@ -116,10 +116,11 @@ export default function OverviewPage({ birthday, events, onNavigate, onAddEvent,
           )}
           <button
             onClick={onAddEvent}
-            className="w-full mt-3 flex items-center justify-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+            className="w-full mt-2 sm:mt-3 flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors text-sm"
           >
             <Plus className="w-4 h-4" />
-            Add Event This Week
+            <span className="hidden sm:inline">Add Event This Week</span>
+            <span className="sm:hidden">Add Event</span>
           </button>
         </div>
       ),
@@ -171,7 +172,7 @@ export default function OverviewPage({ birthday, events, onNavigate, onAddEvent,
             </button>
             
             {isExpanded && (
-              <div className="border-t border-gray-200 dark:border-gray-700 overflow-auto">
+              <div className="border-t border-gray-200 dark:border-gray-700">
                 {section.component}
               </div>
             )}

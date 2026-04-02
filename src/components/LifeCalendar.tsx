@@ -77,74 +77,115 @@ export default function LifeCalendar({ birthday, events, onWeekClick, showOnlyCu
   };
 
   return (
-    <div className="overflow-auto max-h-[600px]">
-      <div className="p-4 space-y-4">
-        {batches.map((batch, batchIndex) => {
-          const isExpanded = expandedBatches.has(batchIndex);
-          const firstYear = batch[0];
-          const lastYear = batch[batch.length - 1];
-          
-          return (
-            <div key={batchIndex} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-              <button
-                onClick={() => toggleBatch(batchIndex)}
-                className="w-full flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              >
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {firstYear} - {lastYear} ({lastYear - firstYear + 1} years)
-                </span>
-                {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              </button>
-              
-              {isExpanded && (
-                <div className="p-2">
-                  <div className="flex flex-col gap-0.5">
-                    {batch.map(year => (
-                      <div key={year} className="flex items-center gap-2">
-                        <div className="w-12 text-xs text-gray-500 dark:text-gray-400 font-medium flex-shrink-0">
-                          {year}
-                        </div>
-                        <div className="flex flex-wrap gap-0.5">
-                          {Array.from({ length: 52 }, (_, weekIndex) => {
-                            const weekNum = weekIndex + 1;
-                            const isPast = isWeekPast(year, weekNum);
-                            const isCurrent = isCurrentWeek(year, weekNum);
-                            const weekEvents = getEventsForWeek(year, weekNum);
-                            const isHovered = hoveredWeek?.year === year && hoveredWeek?.weekNumber === weekNum;
+    <div className={showOnlyCurrentYear ? 'p-2' : ''}>
+      <div className={showOnlyCurrentYear ? '' : 'overflow-auto max-h-[400px]'}>
+        {showOnlyCurrentYear ? (
+          <div className="flex flex-col gap-0.5">
+            <div className="flex items-center gap-2">
+              <div className="w-10 text-xs text-gray-500 dark:text-gray-400 font-medium flex-shrink-0">
+                {currentYear}
+              </div>
+              <div className="flex flex-wrap gap-0.5">
+                {Array.from({ length: 52 }, (_, weekIndex) => {
+                  const weekNum = weekIndex + 1;
+                  const isPast = isWeekPast(currentYear, weekNum);
+                  const isCurrent = isCurrentWeek(currentYear, weekNum);
+                  const weekEvents = getEventsForWeek(currentYear, weekNum);
+                  const isHovered = hoveredWeek?.year === currentYear && hoveredWeek?.weekNumber === weekNum;
 
-                            return (
-                              <div
-                                key={weekNum}
-                                className={`
-                                  week-block w-2.5 h-2.5 rounded-sm cursor-pointer
-                                  ${isPast && hideCompletedWeeks ? 'opacity-0' : 'opacity-100'}
-                                  ${isPast ? 'bg-gray-200 dark:bg-gray-700' : getWeekColor(year, weekNum)}
-                                  ${isCurrent ? 'animate-pulse ring-2 ring-red-500 ring-offset-1' : ''}
-                                  ${isHovered ? 'scale-150 z-10' : ''}
-                                `}
-                                onMouseEnter={() => setHoveredWeek({ year, weekNumber: weekNum })}
-                                onMouseLeave={() => setHoveredWeek(null)}
-                                onClick={() => {
-                                  const { start, end } = getWeekRange(weekNum, year, weekStartDay);
-                                  onWeekClick?.({ year, weekNumber: weekNum, start, end });
-                                }}
-                                title={`Week ${weekNum}, ${year}${weekEvents.length > 0 ? ` (${weekEvents.length} events)` : ''}`}
-                              />
-                            );
-                          })}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                  return (
+                    <div
+                      key={weekNum}
+                      className={`
+                        w-2 h-2 rounded-sm cursor-pointer
+                        ${isPast && hideCompletedWeeks ? 'opacity-0' : 'opacity-100'}
+                        ${isPast ? 'bg-gray-200 dark:bg-gray-700' : getWeekColor(currentYear, weekNum)}
+                        ${isCurrent ? 'animate-pulse ring-1 ring-red-500' : ''}
+                        ${isHovered ? 'scale-150 z-10' : ''}
+                      `}
+                      onMouseEnter={() => setHoveredWeek({ year: currentYear, weekNumber: weekNum })}
+                      onMouseLeave={() => setHoveredWeek(null)}
+                      onClick={() => {
+                        const { start, end } = getWeekRange(weekNum, currentYear, weekStartDay);
+                        onWeekClick?.({ year: currentYear, weekNumber: weekNum, start, end });
+                      }}
+                      title={`Week ${weekNum}, ${currentYear}${weekEvents.length > 0 ? ` (${weekEvents.length} events)` : ''}`}
+                    />
+                  );
+                })}
+              </div>
             </div>
-          );
-        })}
+          </div>
+        ) : (
+          <div className="p-4 space-y-4">
+            {batches.map((batch, batchIndex) => {
+              const isExpanded = expandedBatches.has(batchIndex);
+              const firstYear = batch[0];
+              const lastYear = batch[batch.length - 1];
+              
+              return (
+                <div key={batchIndex} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => toggleBatch(batchIndex)}
+                    className="w-full flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {firstYear} - {lastYear} ({lastYear - firstYear + 1} years)
+                    </span>
+                    {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+                  
+                  {isExpanded && (
+                    <div className="p-2">
+                      <div className="flex flex-col gap-0.5">
+                        {batch.map(year => (
+                          <div key={year} className="flex items-center gap-2">
+                            <div className="w-12 text-xs text-gray-500 dark:text-gray-400 font-medium flex-shrink-0">
+                              {year}
+                            </div>
+                            <div className="flex flex-wrap gap-0.5">
+                              {Array.from({ length: 52 }, (_, weekIndex) => {
+                                const weekNum = weekIndex + 1;
+                                const isPast = isWeekPast(year, weekNum);
+                                const isCurrent = isCurrentWeek(year, weekNum);
+                                const weekEvents = getEventsForWeek(year, weekNum);
+                                const isHovered = hoveredWeek?.year === year && hoveredWeek?.weekNumber === weekNum;
+
+                                return (
+                                  <div
+                                    key={weekNum}
+                                    className={`
+                                      week-block w-2.5 h-2.5 rounded-sm cursor-pointer
+                                      ${isPast && hideCompletedWeeks ? 'opacity-0' : 'opacity-100'}
+                                      ${isPast ? 'bg-gray-200 dark:bg-gray-700' : getWeekColor(year, weekNum)}
+                                      ${isCurrent ? 'animate-pulse ring-2 ring-red-500 ring-offset-1' : ''}
+                                      ${isHovered ? 'scale-150 z-10' : ''}
+                                    `}
+                                    onMouseEnter={() => setHoveredWeek({ year, weekNumber: weekNum })}
+                                    onMouseLeave={() => setHoveredWeek(null)}
+                                    onClick={() => {
+                                      const { start, end } = getWeekRange(weekNum, year, weekStartDay);
+                                      onWeekClick?.({ year, weekNumber: weekNum, start, end });
+                                    }}
+                                    title={`Week ${weekNum}, ${year}${weekEvents.length > 0 ? ` (${weekEvents.length} events)` : ''}`}
+                                  />
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
       
       {!showOnlyCurrentYear && (
-        <div className="px-4 pb-4 flex items-center gap-4 text-xs">
+        <div className="px-4 py-2 flex items-center gap-4 text-xs">
           <div className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 rounded-sm bg-gray-200 dark:bg-gray-700" />
             <span className="text-gray-500 dark:text-gray-400">Past</span>
