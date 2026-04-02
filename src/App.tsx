@@ -8,15 +8,16 @@ import EventModal from './components/EventModal';
 import SettingsModal from './components/SettingsModal';
 import AuthModal from './components/AuthModal';
 import GuidedLifePanel from './components/GuidedLife/GuidedLifePanel';
+import OverviewPage from './components/Overview/OverviewPage';
 import { Event, CATEGORIES } from './types';
-import { Calendar, Clock, BarChart3, Plus, ChevronDown, ChevronUp, Trash2, Copy, Download, Upload, Target } from 'lucide-react';
+import { Calendar, Clock, BarChart3, Plus, ChevronDown, ChevronUp, Trash2, Copy, Download, Upload, Target, Home } from 'lucide-react';
 import { getCurrentUser, signOut } from './services/auth';
 import { getLastSyncDate, getPendingSyncCount, performDailySync, fetchEvents, fetchProfile, updateProfile, incrementPendingSync, SyncStatus } from './services/sync';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 
 function AppContent() {
   const { state, dispatch } = useApp();
-  const [activeTab, setActiveTab] = useState<'calendar' | 'timeline' | 'statistics' | 'guided'>('calendar');
+  const [activeTab, setActiveTab] = useState<'overview' | 'calendar' | 'timeline' | 'statistics' | 'guided'>('overview');
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -206,7 +207,8 @@ function AppContent() {
   };
 
   const tabs = [
-    { id: 'calendar', icon: Calendar, label: 'Calendar', description: 'Life calendar view with weekly blocks from birth to life expectancy' },
+    { id: 'overview', icon: Home, label: 'Overview', description: 'Your life at a glance with stats, guided life, calendar, and events' },
+    { id: 'calendar', icon: Calendar, label: 'Calendar', description: 'Full life calendar view with weekly blocks from birth to life expectancy' },
     { id: 'timeline', icon: Clock, label: 'Timeline', description: 'Chronological timeline of your life events grouped by year' },
     { id: 'statistics', icon: BarChart3, label: 'Stats', description: 'Life statistics, progress tracking, and event analytics' },
     { id: 'guided', icon: Target, label: 'Guided Life', description: 'Set yearly goals, quarterly objectives, and monthly milestones' },
@@ -331,6 +333,16 @@ function AppContent() {
                 </div>
               </div>
             </div>
+          )}
+
+          {activeTab === 'overview' && (
+            <OverviewPage 
+              birthday={birthday} 
+              events={filteredEvents}
+              onNavigate={setActiveTab}
+              onAddEvent={handleAddEvent}
+              onEditEvent={handleEditEvent}
+            />
           )}
 
           {activeTab === 'calendar' && (

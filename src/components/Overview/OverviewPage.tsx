@@ -1,0 +1,183 @@
+import { useState } from 'react';
+import { useApp } from '../../store/AppContext';
+import Statistics from '../Statistics';
+import GuidedLifePanel from '../GuidedLife/GuidedLifePanel';
+import LifeCalendar from '../LifeCalendar';
+import { Event, CATEGORIES } from '../../types';
+import { Calendar, Clock, BarChart3, Target, ChevronDown, ChevronUp, Plus, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { formatDate, getCurrentWeekNumber, isWithinInterval, getWeekRange } from '../../utils/dateUtils';
+
+interface OverviewPageProps {
+  birthday: Date;
+  events: Event[];
+  onNavigate: (tab: 'calendar' | 'timeline' | 'statistics' | 'guided') => void;
+  onAddEvent: () => void;
+  onEditEvent: (event: Event) => void;
+}
+
+export default function OverviewPage({ birthday, events, onNavigate, onAddEvent, onEditEvent }: OverviewPageProps) {
+  const { state } = useApp();
+  const [expandedSection, setExpandedSection] = useState<string | null>('all');
+  const [hideCompletedWeeks, setHideCompletedWeeks] = useState(true);
+
+  const currentYear = new Date().getFullYear();
+  const weekStartDay = state.settings.weekStartDay;
+  const currentWeekNum = getCurrentWeekNumber(weekStartDay);
+  const { start: weekStart, end: weekEnd } = getWeekRange(currentWeekNum, currentYear, weekStartDay);
+
+  const thisWeekEvents = events.filter(event => 
+    isWithinInterval(event.startDate, { start: weekStart, end: weekEnd }) ||
+    (event.endDate && isWithinInterval(event.endDate, { start: weekStart, end: weekEnd }))
+  ).slice(0, 5);
+
+  const sections = [
+    {
+      id: 'stats',
+      title: 'Life Statistics',
+      icon: BarChart3,
+      component: <Statistics birthday={birthday} />,
+      shortDescription: 'Your life progress at a glance',
+    },
+    {
+      id: 'guided',
+      title: 'Guided Life',
+      icon: Target,
+      component: <GuidedLifePanel userId={null} isPremium={false} />,
+      shortDescription: 'Yearly goals, objectives & milestones',
+    },
+    {
+      id: 'calendar',
+      title: 'This Year',
+      icon: Calendar,
+      component: (
+        <div className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              Week {currentWeekNum} of {currentYear}
+            </span>
+            <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={hideCompletedWeeks}
+                onChange={e => setHideCompletedWeeks(e.target.checked)}
+                className="rounded"
+              />
+              {hideCompletedWeeks ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              {hideCompletedWeeks ? 'Hide past' : 'Show all'}
+            </label>
+          </div>
+          <LifeCalendar 
+            birthday={birthday} 
+            events={events} 
+            onWeekClick={() => {}}
+            showOnlyCurrentYear={true}
+            hideCompletedWeeks={hideCompletedWeeks}
+          />
+        </div>
+      ),
+      shortDescription: `Week ${currentWeekNum} • ${thisWeekEvents.length} events this week`,
+    },
+    {
+      id: 'timeline',
+      title: 'This Week',
+      icon: Clock,
+      component: (
+        <div className="p-4">
+          {thisWeekEvents.length === 0 ? (
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+              <p className="mb-2">No events this week</p>
+              <p className="text-sm">{formatDate(weekStart, 'MMM d')} - {formatDate(weekEnd, 'MMM d, yyyy')}</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {thisWeekEvents.map(event => {
+                const categoryConfig = CATEGORIES.find(c => c.id === event.category);
+                return (
+                  <div
+                    key={event.id}
+                    onClick={() => onEditEvent(event)}
+                    className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >
+                    <div 
+                      className="w-2 h-2 rounded-full" 
+                      style={{ backgroundColor: categoryConfig?.color || '#64748b' }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{event.title}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {formatDate(event.startDate, 'MMM d')}
+                        {event.endDate && ` - ${formatDate(event.endDate, 'MMM d')}`}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          <button
+            onClick={onAddEvent}
+            className="w-full mt-3 flex items-center justify-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Add Event This Week
+          </button>
+        </div>
+      ),
+      shortDescription: `${thisWeekEvents.length} events this week`,
+    },
+  ];
+
+  const toggleSection = (id: string) => {
+    setExpandedSection(expandedSection === id ? null : id);
+  };
+
+  return (
+    <div className="space-y-4">
+      {sections.map(section => {
+        const isExpanded = expandedSection === section.id || expandedSection === 'all';
+        const Icon = section.icon;
+
+        return (
+          <div 
+            key={section.id}
+            className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
+          >
+            <button
+              onClick={() => toggleSection(section.id)}
+              className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center">
+                  <Icon className="w-5 h-5 text-primary-500" />
+                </div>
+                <div className="text-left">
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100">{section.title}</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{section.shortDescription}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onNavigate(section.id as any);
+                  }}
+                  className="flex items-center gap-1 px-3 py-1.5 text-sm text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+                >
+                  Expand
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+                {isExpanded ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
+              </div>
+            </button>
+            
+            {isExpanded && (
+              <div className="border-t border-gray-200 dark:border-gray-700">
+                {section.component}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
