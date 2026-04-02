@@ -113,7 +113,7 @@ export default function LifeCalendar({ birthday, events, onWeekClick, showOnlyCu
     return (
       <div className="p-2">
         <div className="flex items-center gap-0 sm:gap-1">
-          <div className="w-6 sm:w-12 text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium flex-shrink-0 px-0.5 sm:px-0">
+          <div className="w-6 sm:w-12 text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium flex-shrink-0">
             {currentYear}
           </div>
           <div className="flex gap-1.5 sm:gap-0.5 flex-1">
@@ -155,7 +155,7 @@ export default function LifeCalendar({ birthday, events, onWeekClick, showOnlyCu
               <div className="p-2 space-y-1">
                 {batch.map(year => (
                   <div key={year} className="flex items-center gap-0 sm:gap-1">
-                    <div className="w-6 sm:w-12 text-xs text-gray-500 dark:text-gray-400 font-medium flex-shrink-0 px-0.5 sm:px-0">
+                    <div className="w-6 sm:w-12 text-xs text-gray-500 dark:text-gray-400 font-medium flex-shrink-0">
                       {year}
                     </div>
                     <div className="flex gap-1.5 sm:gap-0.5 flex-1">
